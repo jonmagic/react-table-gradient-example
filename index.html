@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Gradient Scroll Demo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* Prevents the entire page from scrolling */
+    }
+
+    .wrapper {
+      position: relative;
+      width: 100%;
+      height: 100vh; /* Full viewport height */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f7f7f7;
+    }
+
+    .container {
+      position: relative;
+      width: 90%;
+      height: 80%; /* Adjust height if needed */
+      overflow-x: auto; /* Enable horizontal scrolling */
+      border: 1px solid #ddd;
+      background: white;
+    }
+
+    .table {
+      display: flex;
+      min-width: 100%; /* Ensure the table is wide enough */
+      border-collapse: collapse;
+    }
+
+    .table-row {
+      display: flex;
+    }
+
+    .table-cell {
+      flex: 1 1 150px;
+      padding: 8px 16px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    .gradient {
+      position: absolute;
+      top: 0;
+      right: 5%; /* Matches the container's width (90%) */
+      height: 80%; /* Matches the container height */
+      width: 80px;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React
+
+    function App() {
+      const containerRef = useRef(null)
+      const [isScrollable, setIsScrollable] = useState(false)
+      const [atEnd, setAtEnd] = useState(false)
+
+      useEffect(() => {
+        const container = containerRef.current
+        const checkScroll = () => {
+          const scrollable = container.scrollWidth > container.clientWidth
+          const atScrollEnd =
+            container.scrollLeft + container.clientWidth >= container.scrollWidth - 1
+          setIsScrollable(scrollable)
+          setAtEnd(atScrollEnd)
+        }
+
+        checkScroll()
+        container.addEventListener('scroll', checkScroll)
+        window.addEventListener('resize', checkScroll)
+
+        return () => {
+          container.removeEventListener('scroll', checkScroll)
+          window.removeEventListener('resize', checkScroll)
+        }
+      }, [])
+
+      return (
+        <div className="wrapper">
+          <div className="container" ref={containerRef}>
+            <div className="table">
+              {[...Array(5)].map((_, rowIndex) => (
+                <div className="table-row" key={rowIndex}>
+                  {[...Array(20)].map((_, colIndex) => (
+                    <div className="table-cell" key={colIndex}>
+                      Row {rowIndex + 1}, Col {colIndex + 1}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+          {isScrollable && (
+            <div
+              className="gradient"
+              style={{
+                opacity: atEnd ? 0 : 1, // Adjust visibility dynamically
+              }}
+            ></div>
+          )}
+        </div>
+      )
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"))
+    root.render(<App />)
+  </script>
+</body>
+</html>
